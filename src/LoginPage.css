@@ -1,0 +1,80 @@
+.login-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  font-family: 'Poppins', sans-serif;
+}
+
+.logo-section {
+  flex: 1;
+  background-color: #f0f0f0; /* cinza claro */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.school-logo {
+  max-width: 80%;
+  height: auto;
+}
+
+.form-section {
+  flex: 1;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #ffffff;
+}
+
+h2 {
+  color: #1e3a8a; /* azul escuro */
+  margin-bottom: 2rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input {
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 0.8rem;
+  background-color: #facc15; /* amarelo */
+  color: #1e3a8a;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #fbbf24;
+}
+
+.role-hint {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #ef4444; /* vermelho */
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .logo-section {
+    height: 200px;
+  }
+
+  .form-section {
+    padding: 2rem;
+  }
+}
