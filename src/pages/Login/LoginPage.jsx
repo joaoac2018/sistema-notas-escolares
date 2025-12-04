@@ -1,16 +1,18 @@
 import React from 'react';
 import './LoginPage.css';
-import logo from './Assets/Logo.png'; // substitua pelo caminho correto do logo
+import logo from '../../Assets/Logo.png'; // substitua pelo caminho correto do logo
 
 function LoginPage() {
   return (
     <div className="login-container">
       <div className="logo-section">
         <img src={logo} alt="Colégio Atitude Rabisco" className="school-logo" />
+          <div className="logo-frase">
+            <h2 style={{ marginTop: '1rem', fontWeight: 'bold', fontSize: '1.2rem', color: '#333' }}> 
+              Uma escola que cuida bem do seu filho
+              </h2>
+          </div>
       </div>
-        <div className="logo-frase">
-          <h2> Uma escola que cuida bem do sue filho</h2>
-        </div>
       <div className="form-section">
         <h2>Bem-vindos a secretaria online</h2>
         <form>

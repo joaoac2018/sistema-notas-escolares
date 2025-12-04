@@ -1,0 +1,95 @@
+import React, { useState,useEffect } from 'react';
+import { lancarNota } from './notaservice';
+import { buscarAlunosPorNome } from '../../services/alunoService';
+import './LancarNota.css';
+
+function LancarNotas() {
+  const [nomealuno, setNomeAluno] = useState('');
+  const [disciplina, setDisciplina] = useState('');
+  const [turma, setTurma] = useState('');
+  const [nota, setNota] = useState('');
+  const [alunoBusca, setAlunoBusca] = useState('');
+  const [sugestoes, setSugestoes] = useState([]);
+
+
+
+  useEffect(() => {
+  const buscar = async () => {
+    if (alunoBusca.length > 1) {
+      const resultados = await buscarAlunosPorNome(alunoBusca);
+      setSugestoes(resultados);
+    } else {
+      setSugestoes([]);
+    }
+};
+  buscar();
+}, [alunoBusca]);
+
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+     const dados = { nomealuno, disciplina, turma, nota };
+      try {
+        await lancarNota(dados);
+        alert('Nota lançada com sucesso!');
+        setNomeAluno('');
+        setDisciplina('');
+        setTurma('');
+        setNota('');
+      } catch (err) {
+        alert('Erro ao lançar nota');
+      }
+  };
+
+  return (
+    <div className="lancar-notas-container">
+      <h2>Lançar Notas</h2>
+      <form onSubmit={handleSubmit} className="lancar-notas-form">
+        <label>
+          Nome do Aluno:
+          <input
+            type="text"
+            value={nomealuno}
+            onChange={(e) => setNomeAluno(e.target.value)}
+            required
+          />
+        </label>
+
+        <label>
+          Disciplina:
+          <input
+            type="text"
+            value={disciplina}
+            onChange={(e) => setDisciplina(e.target.value)}
+            required
+          />
+        </label>
+
+        <label>
+          Turma:
+          <input
+            type="text"
+            value={turma}
+            onChange={(e) => setTurma(e.target.value)}
+            required
+          />
+        </label>
+
+        <label>
+          Nota:
+          <input
+            type="number"
+            value={nota}
+            onChange={(e) => setNota(e.target.value)}
+            min="0"
+            max="10"
+            step="0.1"
+            required
+          />
+        </label>
+        <button type="submit">Lançar Nota</button>
+      </form>
+    </div>
+  );
+}
+
+export default LancarNotas;

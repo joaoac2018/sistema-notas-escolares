@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 function CadastroAluno() {

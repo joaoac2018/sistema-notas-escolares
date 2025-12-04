@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import { collection, getDocs, addDoc } from 'firebase/firestore';
 
 function LancarPresenca() {

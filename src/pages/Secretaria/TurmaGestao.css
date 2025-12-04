@@ -1,0 +1,116 @@
+.turma-gestao-container {
+  padding: 2rem;
+  background-color: #fff;
+  flex: 1;
+}
+
+.card-grid {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  background-color: #facc15;
+  color: #2c3e50;
+  padding: 1.5rem;
+  border-radius: 8px;
+  width: 220px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 0.8rem;
+}
+
+.formulario-turma, .lista-turmas {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #e5e7eb;
+  border-radius: 8px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.formulario-turma form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formulario-turma label {
+  font-weight: bold;
+  color: #333;
+}
+
+.formulario-turma input,
+.formulario-turma select {
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.formulario-turma button {
+  padding: 0.8rem;
+  background-color: #facc15;
+  color: #2c3e50;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.lista-turmas ul {
+  list-style: none;
+  padding: 0;
+}
+
+.lista-turmas li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.excluir-turmas {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #ffe4e6;
+  border-radius: 8px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.excluir-turmas ul {
+  list-style: none;
+  padding: 0;
+}
+
+.excluir-turmas li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #ccc;
+  font-size: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.excluir-turmas button {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
