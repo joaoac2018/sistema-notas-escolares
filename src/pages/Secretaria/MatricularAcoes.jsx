@@ -109,24 +109,10 @@ function MatricularAcoes() {
         ))}
       </div>
 
-      {acaoAtiva === 'lista' && (
-        <div className="lista-alunos">
-          <h3>Alunos Matriculados</h3>         
-            <ul>
-              {alunos.map((aluno) => (
-                <li key={aluno.id}>
-                  <div className="aluno-card">
-                    <span><strong>{aluno.nome}</strong> — {aluno.turma}</span>
-                    <button>Detalhes</button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-        </div>
-      )}
 
       {acaoAtiva === 'formulario' && (
-          <div className="formulario-matricula">
+        <div className="formulario-matricula">
+          <h3>Matricular Novo Aluno</h3>
             <form onSubmit={handleMatricula}>
               <label>
                 Nome do Aluno:
@@ -135,7 +121,7 @@ function MatricularAcoes() {
                   placeholder="Digite o nome completo"
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                />
+                  />
               </label>
               <label>
                 Data de Nascimento:
@@ -143,7 +129,7 @@ function MatricularAcoes() {
                   type="date"
                   value={nascimento}
                   onChange={(e) => setNascimento(e.target.value)}
-                />
+                  />
               </label>
               <label>
                 Turma:
@@ -152,10 +138,26 @@ function MatricularAcoes() {
                   placeholder="Ex: 3º Ano A"
                   value={turma}
                   onChange={(e) => setTurma(e.target.value)}
-                />
+                  />
               </label>
               <button type="submit">Confirmar Matrícula</button>
             </form>
+          </div>
+        )}
+        
+        {acaoAtiva === 'lista' && (
+          <div className="lista-alunos">
+            <h3>Alunos Matriculados</h3>         
+              <ul>
+                {alunos.map((aluno) => (
+                  <li key={aluno.id}>
+                    <div className="aluno-card">
+                      <span><strong>{aluno.nome}</strong> — {aluno.turma}</span>
+                      <button>Detalhes</button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
           </div>
         )}
       </div>

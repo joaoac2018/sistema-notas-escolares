@@ -142,7 +142,7 @@ function TurmaGestao() {
 
       {acaoAtiva === 'formulario' && (
         <div className="formulario-turma">
-          <h3>Cadastro de Turma</h3>
+          <h3>Cadastrar nova Turma</h3>
           <form onSubmit={handleSubmit}>
             <label>
               Nome da Turma:
