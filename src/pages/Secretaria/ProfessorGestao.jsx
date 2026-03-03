@@ -106,26 +106,10 @@ function ProfessorGestao() {
         ))}
       </div>
 
-      {acaoAtiva === 'lista' && (
-        <div className="lista-professores">
-          <h3>Professores Cadastrados</h3>
-          <ul>
-            {professores.map((professor) => (
-              <li key={professor.id}>
-                <div className="professor-card">
-                  <span>
-                    <strong>{professor.nome}</strong> — {professor.disciplina}
-                  </span>
-                  <button>Detalhes</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       {acaoAtiva === 'formulario' && (
         <div className="formulario-professor">
+          <h3>Cadastrar Novo Professor</h3>
           <form onSubmit={handleCadastro}>
               <label>
                 Nome:
@@ -156,6 +140,23 @@ function ProfessorGestao() {
               </label>
               <button type="submit">Cadastrar</button>
             </form>
+        </div>
+      )}
+      {acaoAtiva === 'lista' && (
+        <div className="lista-professores">
+          <h3>Professores Cadastrados</h3>
+          <ul>
+            {professores.map((professor) => (
+              <li key={professor.id}>
+                <div className="professor-card">
+                  <span>
+                    <strong>{professor.nome}</strong> — {professor.disciplina}
+                  </span>
+                  <button>Detalhes</button>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
