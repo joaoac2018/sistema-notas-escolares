@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { lancarNota } from './notaservice';
 import { buscarAlunosPorNome } from '../../services/alunoService';
 import './LancarNota.css';
@@ -10,7 +10,7 @@ function LancarNotas() {
   const [nota, setNota] = useState('');
   const [alunoBusca, setAlunoBusca] = useState('');
   const [sugestoes, setSugestoes] = useState([]);
-
+  const [alunoSelecionado, setAlunoSelecionado] = useState(null);
 
 
   useEffect(() => {
@@ -40,9 +40,57 @@ function LancarNotas() {
       }
   };
 
+  const selecionarAluno = (aluno) => {
+    setAlunoSelecionado(aluno);
+    setNomeAluno(aluno.nome); // já preenche o campo do formulário
+    setTurma(aluno.turma);    // já preenche a turma
+  };
+
+
   return (
     <div className="lancar-notas-container">
       <h2>Lançar Notas</h2>
+
+      <div className="painel-container">
+        {/* Painel Pesquisar Aluno */}
+        <div className="painel painel-pesquisar">
+          <h3>Pesquisar Aluno</h3>
+          <input
+            type="text"
+            placeholder="Digite o nome do aluno"
+            value={alunoBusca}
+            onChange={(e) => setAlunoBusca(e.target.value)}
+          />
+          <ul className="sugestoes-lista">
+            {sugestoes.map((aluno, index) => (
+              <li key={index} onClick={() => selecionarAluno(aluno)}>
+                {aluno.nome}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Painel Informações do Aluno */}
+        <div className="painel painel-info">
+          <h3>Informações do Aluno</h3>
+          {alunoSelecionado ? (
+            <div>
+              <p><strong>Nome:</strong> {alunoSelecionado.nome}</p>
+              <p><strong>Série/Turma:</strong> {alunoSelecionado.turma}</p>
+              <p><strong>Matérias:</strong></p>
+              <ul>
+                {alunoSelecionado.materias?.map((m, i) => (
+                  <li key={i}>{m}</li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p>Nenhum aluno selecionado.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Formulário de lançamento de nota */}
       <form onSubmit={handleSubmit} className="lancar-notas-form">
         <label>
           Nome do Aluno:
@@ -91,5 +139,6 @@ function LancarNotas() {
     </div>
   );
 }
+
 
 export default LancarNotas;

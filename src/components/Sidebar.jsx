@@ -12,7 +12,6 @@ import {
   FaEye,
   FaFileAlt, 
   FaChalkboard,
-  FaListUl
 } from 'react-icons/fa';
 import './Sidebar.css';
 
