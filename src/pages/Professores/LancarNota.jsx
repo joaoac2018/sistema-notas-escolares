@@ -46,12 +46,14 @@ function LancarNotas() {
     setTurma(aluno.turma);    // já preenche a turma
   };
 
+ 
 
   return (
     <div className="lancar-notas-container">
       <h2>Lançar Notas</h2>
 
       <div className="painel-container">
+        
         {/* Painel Pesquisar Aluno */}
         <div className="painel painel-pesquisar">
           <h3>Pesquisar Aluno</h3>
@@ -88,6 +90,40 @@ function LancarNotas() {
             <p>Nenhum aluno selecionado.</p>
           )}
         </div>
+        
+          {/* Painel Planilha de Disciplinas */}
+<div className="painel painel-planilha">
+  <h3>Disciplinas e Notas</h3>
+  <table className="tabela-disciplinas">
+    <thead>
+      <tr>
+        <th>Disciplina</th>
+        <th>Nota</th>
+      </tr>
+    </thead>
+    <tbody>
+      {alunoSelecionado?.materias?.map((materia, index) => (
+        <tr key={index}>
+          <td>{materia}</td>
+          <td>
+            <input
+              type="number"
+              min="0"
+              max="10"
+              step="0.1"
+              placeholder="Digite a nota"
+              onChange={(e) => {
+                // Aqui você pode salvar a nota em um objeto state
+                // Exemplo: setNotas({...notas, [materia]: e.target.value})
+              }}
+            />
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+  <button className="btn-salvar">Salvar Notas</button>
+</div>
       </div>
 
       {/* Formulário de lançamento de nota */}
