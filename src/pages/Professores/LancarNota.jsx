@@ -4,13 +4,10 @@ import { buscarAlunosPorNome } from '../../services/alunoService';
 import './LancarNota.css';
 
 function LancarNotas() {
-  const [nomealuno, setNomeAluno] = useState('');
-  const [disciplina, setDisciplina] = useState('');
-  const [turma, setTurma] = useState('');
-  const [nota, setNota] = useState('');
   const [alunoBusca, setAlunoBusca] = useState('');
   const [sugestoes, setSugestoes] = useState([]);
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
+  const [notas, setNotas] = useState('');
 
 
   useEffect(() => {
@@ -25,48 +22,59 @@ function LancarNotas() {
   buscar();
 }, [alunoBusca]);
 
-  const handleSubmit = async(e) => {
-    e.preventDefault();
-     const dados = { nomealuno, disciplina, turma, nota };
-      try {
-        await lancarNota(dados);
-        alert('Nota lançada com sucesso!');
-        setNomeAluno('');
-        setDisciplina('');
-        setTurma('');
-        setNota('');
-      } catch (err) {
-        alert('Erro ao lançar nota');
-      }
-  };
-
   const selecionarAluno = (aluno) => {
     setAlunoSelecionado(aluno);
-    setNomeAluno(aluno.nome); // já preenche o campo do formulário
-    setTurma(aluno.turma);    // já preenche a turma
+    setNotas({}); // limpa notas ao trocar de aluno
+  };
+
+  const handleNotaChange = (materia, bimestre, valor) => {
+    setNotas((prev) => ({
+      ...prev,
+      [materia]: {
+        ...prev[materia],
+        [bimestre]: valor
+      }
+    }));
+  };
+
+  const calcularMedia = (materia) => {
+    const bimestres = notas[materia] || {};
+    const valores = Object.values(bimestres).map(Number).filter(v => !isNaN(v));
+    if (valores.length === 0) return '-';
+    const soma = valores.reduce((acc, v) => acc + v, 0);
+    return (soma / valores.length).toFixed(2);
+  };
+
+  const salvarNotas = async () => {
+    try {
+      await lancarNota({ aluno: alunoSelecionado, notas });
+      alert('Notas salvas com sucesso!');
+    } catch (err) {
+      alert('Erro ao salvar notas');
+    }
   };
 
  
-
   return (
     <div className="lancar-notas-container">
       <h2>Lançar Notas</h2>
+      <p className="subtitulo">Gestão acadêmica e registro de desempenho discente.</p>
 
       <div className="painel-container">
-        
         {/* Painel Pesquisar Aluno */}
         <div className="painel painel-pesquisar">
           <h3>Pesquisar Aluno</h3>
           <input
             type="text"
-            placeholder="Digite o nome do aluno"
+            placeholder="Nome ou matrícula..."
             value={alunoBusca}
             onChange={(e) => setAlunoBusca(e.target.value)}
           />
           <ul className="sugestoes-lista">
             {sugestoes.map((aluno, index) => (
               <li key={index} onClick={() => selecionarAluno(aluno)}>
-                {aluno.nome}
+                {aluno.nome} <br />
+                Matrícula: #{aluno.matricula}
               </li>
             ))}
           </ul>
@@ -77,101 +85,72 @@ function LancarNotas() {
           <h3>Informações do Aluno</h3>
           {alunoSelecionado ? (
             <div>
-              <p><strong>Nome:</strong> {alunoSelecionado.nome}</p>
-              <p><strong>Série/Turma:</strong> {alunoSelecionado.turma}</p>
-              <p><strong>Matérias:</strong></p>
-              <ul>
-                {alunoSelecionado.materias?.map((m, i) => (
-                  <li key={i}>{m}</li>
-                ))}
-              </ul>
+              <p><strong>Nome completo:</strong> {alunoSelecionado.nome}</p>
+              <p><strong>Turma / Série:</strong> {alunoSelecionado.turma}</p>
+              <p><strong>Período letivo:</strong> {alunoSelecionado.periodo}</p>
+              <p><strong>Status acadêmico:</strong> {alunoSelecionado.status}</p>
+              {/* Aqui pode entrar a barra de progresso */}
             </div>
           ) : (
             <p>Nenhum aluno selecionado.</p>
           )}
         </div>
-        
-          {/* Painel Planilha de Disciplinas */}
-<div className="painel painel-planilha">
-  <h3>Disciplinas e Notas</h3>
-  <table className="tabela-disciplinas">
-    <thead>
-      <tr>
-        <th>Disciplina</th>
-        <th>Nota</th>
-      </tr>
-    </thead>
-    <tbody>
-      {alunoSelecionado?.materias?.map((materia, index) => (
-        <tr key={index}>
-          <td>{materia}</td>
-          <td>
-            <input
-              type="number"
-              min="0"
-              max="10"
-              step="0.1"
-              placeholder="Digite a nota"
-              onChange={(e) => {
-                // Aqui você pode salvar a nota em um objeto state
-                // Exemplo: setNotas({...notas, [materia]: e.target.value})
-              }}
-            />
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-  <button className="btn-salvar">Salvar Notas</button>
-</div>
       </div>
 
-      {/* Formulário de lançamento de nota */}
-      <form onSubmit={handleSubmit} className="lancar-notas-form">
-        <label>
-          Nome do Aluno:
-          <input
-            type="text"
-            value={nomealuno}
-            onChange={(e) => setNomeAluno(e.target.value)}
-            required
-          />
-        </label>
-
-        <label>
-          Disciplina:
-          <input
-            type="text"
-            value={disciplina}
-            onChange={(e) => setDisciplina(e.target.value)}
-            required
-          />
-        </label>
-
-        <label>
-          Turma:
-          <input
-            type="text"
-            value={turma}
-            onChange={(e) => setTurma(e.target.value)}
-            required
-          />
-        </label>
-
-        <label>
-          Nota:
-          <input
-            type="number"
-            value={nota}
-            onChange={(e) => setNota(e.target.value)}
-            min="0"
-            max="10"
-            step="0.1"
-            required
-          />
-        </label>
-        <button type="submit">Lançar Nota</button>
-      </form>
+      {/* Painel Planilha de Disciplinas */}
+      {alunoSelecionado && (
+        <div className="painel painel-planilha">
+          <h3>Disciplinas e Notas</h3>
+          <table className="tabela-disciplinas">
+            <thead>
+              <tr>
+                <th>Disciplina</th>
+                <th>Bimestre 1</th>
+                <th>Bimestre 2</th>
+                <th>Bimestre 3</th>
+                <th>Bimestre 4</th>
+                <th>Média Parcial</th>
+              </tr>
+            </thead>
+            <tbody>
+              {alunoSelecionado.materias?.map((materia, index) => (
+                <tr key={index}>
+                  <td>{materia}</td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      onChange={(e) => handleNotaChange(materia, 'b1', e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      onChange={(e) => handleNotaChange(materia, 'b2', e.target.value)}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      onChange={(e) => handleNotaChange(materia, 'b3', e.target.value)}
+                    />
+                  </td>
+                  <td>{calcularMedia(materia)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button className="btn-salvar" onClick={salvarNotas}>Salvar Notas</button>
+        </div>
+      )}
     </div>
   );
 }
