@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './TurmaGestao.css';
-import { cadastrarTurma } from './turmaService';
+import { cadastrarTurma } from '../../services/turmaService';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { FaPlus, FaEdit, FaTrashAlt, FaListUl } from 'react-icons/fa';

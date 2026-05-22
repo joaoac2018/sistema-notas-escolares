@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { lancarNota } from './notaservice';
+import { lancarNota } from '../../services/notaservice';
 import { buscarAlunosPorNome } from '../../services/alunoService';
 import './LancarNota.css';
 
