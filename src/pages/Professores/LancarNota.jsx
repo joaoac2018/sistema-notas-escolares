@@ -57,12 +57,12 @@ function LancarNotas() {
  
   return (
     <div className="lancar-notas-container">
-      <h2>Lançar Notas</h2>
+      <h2>Painel de Notas</h2>
       <p className="subtitulo">Gestão acadêmica e registro de desempenho discente.</p>
 
       <div className="painel-container">
         {/* Painel Pesquisar Aluno */}
-        <div className="painel painel-pesquisar">
+        <div className="painel-pesquisar">
           <h3>Pesquisar Aluno</h3>
           <input
             type="text"
@@ -81,7 +81,7 @@ function LancarNotas() {
         </div>
 
         {/* Painel Informações do Aluno */}
-        <div className="painel painel-info">
+        <div className="painel-info">
           <h3>Informações do Aluno</h3>
           {alunoSelecionado ? (
             <div>
@@ -99,7 +99,7 @@ function LancarNotas() {
 
       {/* Painel Planilha de Disciplinas */}
       {alunoSelecionado && (
-        <div className="painel painel-planilha">
+        <div className="painel-planilha">
           <h3>Disciplinas e Notas</h3>
           <table className="tabela-disciplinas">
             <thead>
@@ -113,16 +113,17 @@ function LancarNotas() {
               </tr>
             </thead>
             <tbody>
-              {alunoSelecionado.materias?.map((materia, index) => (
+              {alunoSelecionado.notas?.map((nota, index) => (
                 <tr key={index}>
-                  <td>{materia}</td>
+                  <td>{nota.disciplina}</td>
                   <td>
                     <input
                       type="number"
                       min="0"
                       max="10"
                       step="0.1"
-                      onChange={(e) => handleNotaChange(materia, 'b1', e.target.value)}
+                      defaultValue={nota.disciplina[0] || ''}
+                      onChange={(e) => handleNotaChange(nota.disciplina, 'b1', e.target.value)}
                     />
                   </td>
                   <td>
@@ -131,7 +132,8 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      onChange={(e) => handleNotaChange(materia, 'b2', e.target.value)}
+                      defaultValue={nota.disciplina[2] || ''}
+                      onChange={(e) => handleNotaChange(nota.disciplina, 'b2', e.target.value)}
                     />
                   </td>
                   <td>
@@ -140,10 +142,21 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      onChange={(e) => handleNotaChange(materia, 'b3', e.target.value)}
+                      defaultValue={nota.disciplina[3] || ''}
+                      onChange={(e) => handleNotaChange(nota.disciplina, 'b3', e.target.value)}
                     />
                   </td>
-                  <td>{calcularMedia(materia)}</td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      defaultValue={nota.disciplina[4] || ''}
+                      onChange={(e) => handleNotaChange(nota.disciplina, 'b4', e.target.value)}
+                    />
+                  </td>
+                  <td>{calcularMedia(nota.disciplina)}</td>
                 </tr>
               ))}
             </tbody>
