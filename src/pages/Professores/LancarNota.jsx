@@ -6,51 +6,67 @@ import './LancarNota.css';
 function LancarNotas() {
   const [alunoBusca, setAlunoBusca] = useState('');
   const [sugestoes, setSugestoes] = useState([]);
+  const [digitando, setDigitando] = useState(true);
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
   const [notas, setNotas] = useState('');
 
 
   useEffect(() => {
-  const buscar = async () => {
-    if (alunoBusca.length > 1) {
-      const resultados = await buscarAlunosPorNome(alunoBusca);
-      setSugestoes(resultados);
-    } else {
-      setSugestoes([]);
-    }
-};
+    const buscar = async () => {
+      if (digitando && alunoBusca.length > 1) {
+        const resultados = await buscarAlunosPorNome(alunoBusca);
+        setSugestoes(resultados);
+      } else {
+        setSugestoes([]);
+      }
+  };
   buscar();
-}, [alunoBusca]);
+  }, [alunoBusca, digitando]);
+
+  const handleSelectAluno = (aluno) => {
+    setAlunoBusca(aluno.nome);
+    setDigitando(false);
+    setSugestoes([]);
+    selecionarAluno(aluno);
+  };
+
+  const onChangeInput = (e) => {
+    setDigitando(true);
+    setAlunoBusca(e.target.value);
+  };
 
   const selecionarAluno = (aluno) => {
     setAlunoSelecionado(aluno);
     setNotas({}); // limpa notas ao trocar de aluno
   };
+  
 
   const handleNotaChange = (materia, bimestre, valor) => {
     setNotas((prev) => ({
       ...prev,
       [materia]: {
         ...prev[materia],
-        [bimestre]: valor
+        [bimestre]: parseFloat(valor) || 0
       }
     }));
   };
-
-  const calcularMedia = (materia) => {
-    const bimestres = notas[materia] || {};
-    const valores = Object.values(bimestres).map(Number).filter(v => !isNaN(v));
-    if (valores.length === 0) return '-';
-    const soma = valores.reduce((acc, v) => acc + v, 0);
+  const calcularMedia = (valores) => {
+    if (!valores || valores.length === 0) return '-';
+    const soma = valores.reduce((acc, v) => acc + Number(v), 0);
     return (soma / valores.length).toFixed(2);
   };
 
   const salvarNotas = async () => {
     try {
-      await lancarNota({ aluno: alunoSelecionado, notas });
-      alert('Notas salvas com sucesso!');
+     const notasParaSalvar = Object.entries(notas).map(([materia, bimestres]) => {
+     const valores = Object.values(bimestres).map(Number).filter(v => !isNaN(v));
+      return { disciplina: materia, valores };
+    });
+
+    await lancarNota({ aluno: alunoSelecionado, notas: notasParaSalvar });
+    alert("Notas salvas com sucesso!");
     } catch (err) {
-      alert('Erro ao salvar notas');
+    alert("Erro ao salvar notas");
     }
   };
 
@@ -66,18 +82,20 @@ function LancarNotas() {
           <h3>Pesquisar Aluno</h3>
           <input
             type="text"
-            placeholder="Nome ou matrícula..."
+            placeholder="Digite o nome do aluno"
             value={alunoBusca}
-            onChange={(e) => setAlunoBusca(e.target.value)}
+            onChange={onChangeInput}
           />
-          <ul className="sugestoes-lista">
-            {sugestoes.map((aluno, index) => (
-              <li key={index} onClick={() => selecionarAluno(aluno)}>
-                {aluno.nome} <br />
-                Matrícula: #{aluno.matricula}
-              </li>
-            ))}
-          </ul>
+          {sugestoes.length > 0 && (
+            <ul className="sugestoes-lista">
+              {sugestoes.map((aluno, index) => (
+                <li key={index} onClick={() => handleSelectAluno(aluno)}>
+                  {aluno.nome} <br />
+                  Matrícula: #{aluno.matricula}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Painel Informações do Aluno */}
@@ -86,9 +104,9 @@ function LancarNotas() {
           {alunoSelecionado ? (
             <div>
               <p><strong>Nome completo:</strong> {alunoSelecionado.nome}</p>
-              <p><strong>Turma / Série:</strong> {alunoSelecionado.turma}</p>
-              <p><strong>Período letivo:</strong> {alunoSelecionado.periodo}</p>
-              <p><strong>Status acadêmico:</strong> {alunoSelecionado.status}</p>
+              <p><strong>Turma / Série:</strong> {alunoSelecionado.turmaId}</p>
+              <p><strong>Período letivo:</strong> {alunoSelecionado.periodoLetivo}</p>
+              <p><strong>Status acadêmico:</strong> {alunoSelecionado.statusAcademico}</p>
               {/* Aqui pode entrar a barra de progresso */}
             </div>
           ) : (
@@ -96,7 +114,7 @@ function LancarNotas() {
           )}
         </div>
       </div>
-
+        
       {/* Painel Planilha de Disciplinas */}
       {alunoSelecionado && (
         <div className="painel-planilha">
@@ -122,7 +140,7 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      defaultValue={nota.disciplina[0] || ''}
+                      defaultValue={nota.valores[0] || ''}
                       onChange={(e) => handleNotaChange(nota.disciplina, 'b1', e.target.value)}
                     />
                   </td>
@@ -132,7 +150,7 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      defaultValue={nota.disciplina[2] || ''}
+                      defaultValue={nota.valores[1] || ''}
                       onChange={(e) => handleNotaChange(nota.disciplina, 'b2', e.target.value)}
                     />
                   </td>
@@ -142,7 +160,7 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      defaultValue={nota.disciplina[3] || ''}
+                      defaultValue={nota.valores[2] || ''}
                       onChange={(e) => handleNotaChange(nota.disciplina, 'b3', e.target.value)}
                     />
                   </td>
@@ -152,11 +170,11 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      defaultValue={nota.disciplina[4] || ''}
+                      defaultValue={nota.valores[3] || ''}
                       onChange={(e) => handleNotaChange(nota.disciplina, 'b4', e.target.value)}
                     />
                   </td>
-                  <td>{calcularMedia(nota.disciplina)}</td>
+                  <td>{calcularMedia(nota.valores)}</td>
                 </tr>
               ))}
             </tbody>

@@ -1,20 +1,20 @@
 // notaService.js
 import { db } from './firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 
-export const lancarNota = async (dadosNota) => {
+export const lancarNota = async ({ aluno, notas }) => {
   try {
-    const docRef = await addDoc(collection(db, 'notas'), {
-      aluno: dadosNota.nomealuno,
-      materia: dadosNota.disciplina,
-      turma: dadosNota.turma,
-      nota: dadosNota.nota,
-      data: new Date(),
+    // aluno.id precisa ser o ID do documento do aluno na coleção "alunos"
+    const alunoRef = doc(db, 'alunos', aluno.id);
+
+    await updateDoc(alunoRef, {
+      notas: notas // sobrescreve o campo "notas" com o array atualizado
     });
-    console.log('Nota lançada com ID:', docRef.id);
-    return docRef.id;
+
+    console.log('Notas atualizadas para aluno:', aluno.nome);
+    return true;
   } catch (error) {
-    console.error('Erro ao lançar nota:', error);
+    console.error('Erro ao lançar notas:', error);
     throw error;
   }
 };
