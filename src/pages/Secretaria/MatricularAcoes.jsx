@@ -1,30 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import './MatricularAcoes.css';
+import { collection, getDocs, addDoc } from 'firebase/firestore';
 import { salvarAluno, listarAlunosMatriculados } from '../../services/matriculaServices';
 import { FaUserPlus, FaEdit, FaTrashAlt, FaChalkboard } from 'react-icons/fa';
-import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import './MatricularAcoes.css';
 
-function MatricularAcoes() {
-  const [acaoAtiva, setAcaoAtiva] = useState(null);
-  const [alunos, setAlunos] = useState([]);
-  const [nome, setNome] = useState('');
-  const [nascimento, setNascimento] = useState('');
-  const [turma, setTurma] = useState('');
-  const [responsavel, setResponsavel] = useState('');
-    
-  useEffect(() => {
-      const carregarAlunos = async () => {
-        try {
-          const lista = await listarAlunosMatriculados();
-          setAlunos(lista);
-        } catch (error) {
-          console.error('Erro ao carregar alunos:', error);
-        }
-      };
-      
-      carregarAlunos();
-    }, []);
+ // Lista de disciplinas fixas
+  const disciplinasFixas = [
+    { id: "matematica", nome: "Matemática", ordem: 1 },
+    { id: "lingua portuguesa", nome: "Português", ordem: 2 },
+    { id: "historia", nome: "História", ordem: 3 },
+    { id: "geografia", nome: "Geografia", ordem: 4 },
+    { id: "ciencias", nome: "Ciências Físicas e Biológicas", ordem: 5 },
+    { id: "educacao fisica", nome: "Educação Física", ordem: 6 },
+    { id: "artes", nome: "Artes", ordem: 7 }
+  ];
+
+  // Função para criar notas padrão (fora do componente)
+  const criarNotasPadraoParaAluno = async (alunoId, periodoLetivo) => { 
+   for (const disciplina of disciplinasFixas) {
+      await addDoc(collection(db, "notas"), {
+        id_aluno: alunoId,
+        id_disciplina: disciplina.id,
+        disciplina: disciplina.nome,
+        ordem: disciplina.ordem,
+        bimestre: { b1: 0, b2: 0, b3: 0, b4: 0 },
+        periodoLetivo
+     });
+    }
+  };
+
+  function MatricularAcoes() {
+    const [acaoAtiva, setAcaoAtiva] = useState(null);
+    const [alunos, setAlunos] = useState([]);
+    const [nome, setNome] = useState('');
+    const [nascimento, setNascimento] = useState('');
+    const [turma, setTurma] = useState('');
+  
+    useEffect(() => {
+        const carregarAlunos = async () => {
+          try {
+            const lista = await listarAlunosMatriculados();
+            setAlunos(lista);
+          } catch (error) {
+            console.error('Erro ao carregar alunos:', error);
+          }
+        };        
+        carregarAlunos();
+      }, []);
 
     const handleMatricula = async (e) => {
     e.preventDefault();
@@ -32,20 +55,24 @@ function MatricularAcoes() {
     try {
       const novoAluno = {
       nome,
+      nomeLower: nome.toLowerCase(),
       dataNascimento: nascimento,
       turmaId: turma,
-      responsavel: 'Responsável padrão',
       usuarioId: 'uid_' + Date.now(),
+      periodoLetivo: "2026" 
     };
 
-      await salvarAluno(novoAluno);
+      // salva aluno no Firestore 
+      const alunoId = await salvarAluno(novoAluno);
+
+      // cria notas padrão para o aluno
+      await criarNotasPadraoParaAluno(alunoId, novoAluno.periodoLetivo);
 
 
       alert('Aluno matriculado com sucesso!');
       setNome('');
       setNascimento('');
       setTurma('');
-      setResponsavel('');
       setAcaoAtiva(null); // Fecha o formulário
       } catch (error) {
         alert('Erro ao matricular aluno');

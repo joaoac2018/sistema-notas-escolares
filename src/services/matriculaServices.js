@@ -13,8 +13,16 @@ export const listarAlunosMatriculados = async () => {
     throw error;
   }
   }; 
-  
-  export const salvarAluno = async (aluno) => {
+  export const salvarAluno = async (dadosAluno) => {
+  const alunoComLower = {
+    ...dadosAluno,
+    nomeLower: dadosAluno.nome.toLowerCase()
+  };
+
+  const docRef = await addDoc(collection(db, "alunos"), alunoComLower);
+  return docRef.id;
+};
+  /*export const salvarAluno = async (dadosaluno) => {
   try {
     const docRef = await addDoc(collection(db, 'alunos'), aluno);
     return docRef.id;
@@ -22,4 +30,4 @@ export const listarAlunosMatriculados = async () => {
     console.error('Erro ao salvar aluno:', error);
     throw error;
   }
-};
+};*/
