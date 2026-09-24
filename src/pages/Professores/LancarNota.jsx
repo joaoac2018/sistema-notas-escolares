@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, addDoc, updateDoc, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { lancarNota } from '../../services/notaservice';
 import { buscarAlunosPorNome } from '../../services/alunoService';
@@ -14,59 +14,97 @@ function LancarNotas() {
 
 
   useEffect(() => {
-    const buscar = async () => {
-      if (digitando && alunoBusca.length > 1) {
-        const resultados = await buscarAlunosPorNome(alunoBusca);
-        setSugestoes(resultados);
-      } else {
-        setSugestoes([]);
-      }
-  };
-  buscar();
-  }, [alunoBusca, digitando]);
+      const buscar = async () => {
+        if (digitando && alunoBusca.length > 1) {
+          const resultados = await buscarAlunosPorNome(alunoBusca);
+          setSugestoes(resultados);
+        } else {
+          setSugestoes([]);
+        }
+      };
+      buscar();
+    }, [alunoBusca, digitando]);
 
-  const buscarNotasDoAluno = async (alunoId) => {
-    const notasRef = collection(db, "notas");
-    const q = query(notasRef, where("id_aluno", "==", alunoId));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  };
+    const buscarNotasDoAluno = async (alunoId) => {
+      //1.Buscar disciplinas fixas dos alunos
+      const disciplinasRef = collection(db, "disciplinas");
+      const qDisciplinas = query(disciplinasRef, orderBy("ordem", "asc"));
+      const snapshotDisciplinas = await getDocs(qDisciplinas);
+      const disciplinas = snapshotDisciplinas.docs.map(doc => ({ 
+        id_disciplina: doc.id,
+        nome: doc.data().nome,
+        ordem: doc.data().ordem
+      }));
 
-  const handleSelectAluno = (aluno) => {
-    setAlunoBusca(aluno.nome);
-    setDigitando(false);
-    setSugestoes([]);
-    selecionarAluno(aluno);
-  };
+      //2.Buscar notas do aluno
+      const notasRef = collection(db, "notas");
+      const qNotas = query(notasRef, where("id_aluno", "==", alunoId)); 
+      const snapshotNotas = await getDocs(qNotas);
+      const notasAluno = snapshotNotas.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  const onChangeInput = (e) => {
-    setDigitando(true);
-    setAlunoBusca(e.target.value);
-  };
+      //3. Combinar disciplinas com notas
+      return disciplinas.map(disciplina => {
+        const nota = notasAluno.find(n => n.id_disciplina === disciplina.id_disciplina);
+        return {
+          id: nota?.id || null,
+          id_disciplina: disciplina.id_disciplina,
+          disciplina: disciplina.nome,
+          ordem: disciplina.ordem,
+          bimestre: nota ? nota.bimestre : { b1: '', b2: '', b3: '', b4: '' }
+        };
+      });
+    };
 
-  const selecionarAluno = async (aluno) => {
-    setAlunoSelecionado({
-      id: aluno.id,
-      nome: aluno.nome,
-      matricula: aluno.matricula,
-      ...aluno
+    const handleSelectAluno = (aluno) => {
+      setAlunoBusca(aluno.nome);
+      setDigitando(false);
+      setSugestoes([]);
+      selecionarAluno(aluno);
+    };
+
+    const onChangeInput = (e) => {
+      setDigitando(true);
+      setAlunoBusca(e.target.value);
+    };
+
+    const selecionarAluno = async (aluno) => {
+      setAlunoSelecionado({
+        id: aluno.id,
+        nome: aluno.nome,
+        matricula: aluno.matricula,
+        ...aluno
+      });
+      const notasDoAluno = await buscarNotasDoAluno(aluno.id);
+      setNotas(notasDoAluno);
+    };
+
+    const handleNotaChange = async (nota, bimestre, valor, alunoId) => {
+      if (nota.id) {
+    // já existe documento de nota
+    const notaRef = doc(db, "notas", nota.id);
+    await updateDoc(notaRef, { [`bimestre.${bimestre}`]: Number(valor) });
+  } else {
+    // não existe, criar novo documento
+    const novaNota = await addDoc(collection(db, "notas"), {
+      id_aluno: alunoId,
+      id_disciplina: nota.id_disciplina,
+      disciplina: nota.disciplina,
+      ordem: nota.ordem,
+      bimestre: { [bimestre]: Number(valor) },
+      periodoLetivo: "2026"
     });
-    const notasDoAluno = await buscarNotasDoAluno(aluno.id);
-    setNotas(notasDoAluno);
-  };
+    nota.id = novaNota.id; // atualiza estado local com o novo id
+  }
 
-  const handleNotaChange = async (notaId, bimestre, valor) => {
-    const notaRef = doc(db, "notas", notaId);
-    await updateDoc(notaRef, {[`bimestre.${bimestre}`]: Number(valor) });
-
-    //Atualiza estado local para refletir a mudança imediatamente
-    setNotas(prevNotas => 
-      prevNotas.map((n) =>
-        n.id === notaId 
-          ? { ...n, bimestre: { ...n.bimestre, [bimestre]: 
-            Number(valor) } } 
-            : n
-  ));
+      //Atualiza estado local para refletir a mudança imediatamente
+      setNotas(prevNotas => 
+        prevNotas.map((n) =>
+          n.id_disciplina === nota.id_disciplina 
+            ? { ...n, bimestre: { ...n.bimestre, [bimestre]: 
+              Number(valor) }, id: nota.id } 
+              : n
+      )
+    );
 };
   const calcularMedia = (bimestre) => {
     const valores = Object.values(bimestre || {}).map(Number).filter(v => !isNaN(v));
@@ -78,15 +116,23 @@ function LancarNotas() {
 
   const salvarNotas = async () => {
     try {
-     const notasParaSalvar = Object.entries(notas).map(([materia, bimestres]) => {
-     const valores = Object.values(bimestres).map(Number).filter(v => !isNaN(v));
-      return { disciplina: materia, valores };
-    });
+        const notasParaSalvar = notas.map(nota => {
+          const valores = Object.values(nota.bimestre || {})
+            .map(Number)
+            .filter(v => !isNaN(v));
+          return {
+            id: nota.id,
+            disciplina: nota.disciplina,
+            id_disciplina: nota.id_disciplina,
+            valores
+          };
+        });
 
-    await lancarNota({ aluno: alunoSelecionado, notas: notasParaSalvar });
-    alert("Notas salvas com sucesso!");
-    } catch (err) {
-    alert("Erro ao salvar notas");
+      await lancarNota({ aluno: alunoSelecionado, notas: notasParaSalvar });
+      alert("Notas salvas com sucesso!");
+    } 
+    catch (err) {
+      alert("Erro ao salvar notas");
     }
   };
 
@@ -161,7 +207,7 @@ function LancarNotas() {
                       max="10"
                       step="0.1"
                       defaultValue={nota.bimestre?.b1 || ''}
-                      onChange={(e) => handleNotaChange(nota.disciplina, 'b1', e.target.value)}
+                      onChange={(e) => handleNotaChange(nota, 'b1', e.target.value, alunoSelecionado.id)}
                     />
                   </td>
                   <td>
@@ -171,7 +217,7 @@ function LancarNotas() {
                       max="10"
                       step="0.1"
                       defaultValue={nota.bimestre?.b2 || ''}
-                      onChange={(e) => handleNotaChange(nota.disciplina, 'b2', e.target.value)}
+                      onChange={(e) => handleNotaChange(nota, 'b2', e.target.value, alunoSelecionado.id)}
                     />
                   </td>
                   <td>
@@ -181,7 +227,7 @@ function LancarNotas() {
                       max="10"
                       step="0.1"
                       defaultValue={nota.bimestre?.b3 || ''}
-                      onChange={(e) => handleNotaChange(nota.disciplina, 'b3', e.target.value)}
+                      onChange={(e) => handleNotaChange(nota, 'b3', e.target.value, alunoSelecionado.id)}
                     />
                   </td>
                   <td>
@@ -191,7 +237,7 @@ function LancarNotas() {
                       max="10"
                       step="0.1"
                       defaultValue={nota.bimestre?.b4 || ''}
-                      onChange={(e) => handleNotaChange(nota.disciplina, 'b4', e.target.value)}
+                      onChange={(e) => handleNotaChange(nota, 'b4', e.target.value, alunoSelecionado.id)}
                     />
                   </td>
                   <td>{calcularMedia(nota.bimestre)}</td>
