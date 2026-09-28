@@ -30,17 +30,21 @@ function LancarNotas() {
       const disciplinasRef = collection(db, "disciplinas");
       const qDisciplinas = query(disciplinasRef, orderBy("ordem", "asc"));
       const snapshotDisciplinas = await getDocs(qDisciplinas);
-      const disciplinas = snapshotDisciplinas.docs.map(doc => ({ 
-        id_disciplina: doc.id,
-        nome: doc.data().nome,
-        ordem: doc.data().ordem
+      const disciplinas = snapshotDisciplinas.docs.map(snapshotDoc => ({ 
+        id_disciplina: snapshotDoc.id,
+        nome: snapshotDoc.data().nome,
+        ordem: snapshotDoc.data().ordem
       }));
+      
+      //console.log("Doc data:", doc.data());
+  
 
       //2.Buscar notas do aluno
       const notasRef = collection(db, "notas");
       const qNotas = query(notasRef, where("id_aluno", "==", alunoId)); 
       const snapshotNotas = await getDocs(qNotas);
       const notasAluno = snapshotNotas.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
 
       //3. Combinar disciplinas com notas
       return disciplinas.map(disciplina => {
