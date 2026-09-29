@@ -12,7 +12,7 @@ function LancarNotas() {
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
   const [notas, setNotas] = useState([]);
 
-
+  // useEffect para buscar sugestões de alunos
   useEffect(() => {
       const buscar = async () => {
         if (digitando && alunoBusca.length > 1) {
@@ -24,6 +24,17 @@ function LancarNotas() {
       };
       buscar();
     }, [alunoBusca, digitando]);
+
+    //useEffect para carregar notas do aluno selecionado
+    useEffect(() => {
+      const carregarNotas = async () => {
+        if (alunoSelecionado?.id) {
+          const notasDoAluno = await buscarNotasDoAluno(alunoSelecionado.id);
+          setNotas(notasDoAluno);
+        }
+      };
+      carregarNotas();
+    }, [alunoSelecionado]);
 
     const buscarNotasDoAluno = async (alunoId) => {
       //1.Buscar disciplinas fixas dos alunos
@@ -51,6 +62,7 @@ function LancarNotas() {
         const nota = notasAluno.find(n => n.id_disciplina === disciplina.id_disciplina);
         return {
           id: nota?.id || null,
+          id_aluno: alunoId,
           id_disciplina: disciplina.id_disciplina,
           disciplina: disciplina.nome,
           ordem: disciplina.ordem,
@@ -83,7 +95,24 @@ function LancarNotas() {
     };
 
     const handleNotaChange = async (nota, bimestre, valor, alunoId) => {
-      if (nota.id) {
+      //Atualiza estado local primeiro para refletir a mudança imediatamente
+      setNotas(prevNotas => 
+        prevNotas.map((n) =>
+          n.id_disciplina === nota.id_disciplina && n.id_aluno === alunoId 
+            ? { 
+              ...n, 
+              bimestre: { 
+                ...n.bimestre, 
+                [bimestre]: Number(valor) 
+              }, 
+              id: nota.id 
+            } 
+          : n
+        )
+      );
+
+
+    if (nota.id) {
     // já existe documento de nota
     const notaRef = doc(db, "notas", nota.id);
     await updateDoc(notaRef, { [`bimestre.${bimestre}`]: Number(valor) });
@@ -99,16 +128,6 @@ function LancarNotas() {
     });
     nota.id = novaNota.id; // atualiza estado local com o novo id
   }
-
-      //Atualiza estado local para refletir a mudança imediatamente
-      setNotas(prevNotas => 
-        prevNotas.map((n) =>
-          n.id_disciplina === nota.id_disciplina 
-            ? { ...n, bimestre: { ...n.bimestre, [bimestre]: 
-              Number(valor) }, id: nota.id } 
-              : n
-      )
-    );
 };
   const calcularMedia = (bimestre) => {
     const valores = Object.values(bimestre || {}).map(Number).filter(v => !isNaN(v));
@@ -201,8 +220,8 @@ function LancarNotas() {
               </tr>
             </thead>
             <tbody>
-              {notas.map((nota, index) => (
-                <tr key={index}>
+              {notas.map((nota) => (
+                <tr key={nota.id_disciplina}>
                   <td>{nota.disciplina}</td>
                   <td>
                     <input
@@ -210,7 +229,7 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      defaultValue={nota.bimestre?.b1 || ''}
+                      value={nota.bimestre?.b1 || ''}
                       onChange={(e) => handleNotaChange(nota, 'b1', e.target.value, alunoSelecionado.id)}
                     />
                   </td>
@@ -220,7 +239,7 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      defaultValue={nota.bimestre?.b2 || ''}
+                      value={nota.bimestre?.b2 || ''}
                       onChange={(e) => handleNotaChange(nota, 'b2', e.target.value, alunoSelecionado.id)}
                     />
                   </td>
@@ -230,7 +249,7 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      defaultValue={nota.bimestre?.b3 || ''}
+                      value={nota.bimestre?.b3 || ''}
                       onChange={(e) => handleNotaChange(nota, 'b3', e.target.value, alunoSelecionado.id)}
                     />
                   </td>
@@ -240,7 +259,7 @@ function LancarNotas() {
                       min="0"
                       max="10"
                       step="0.1"
-                      defaultValue={nota.bimestre?.b4 || ''}
+                      value={nota.bimestre?.b4 || ''}
                       onChange={(e) => handleNotaChange(nota, 'b4', e.target.value, alunoSelecionado.id)}
                     />
                   </td>
