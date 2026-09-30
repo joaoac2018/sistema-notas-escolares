@@ -4,6 +4,11 @@
   color: white;
   padding: 1rem;
   min-height: 100vh;
+  transition: transform 0.3s ease;
+}
+
+.sidebar.open {
+  transform: translateX(0);
 }
 
 .sidebar-title {
@@ -43,3 +48,20 @@
   font-size: 1.2rem;
   flex-shrink: 0;
 }
+/* Escondendo a Sidebar em telas pequenas */
+@media (max-width: 768px) {
+  .sidebar {
+  display: block !important;
+  }
+
+  .sidebar.open {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 1000;
+  }
+}
+
+
